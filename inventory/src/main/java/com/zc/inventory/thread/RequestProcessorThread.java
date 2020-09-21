@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 
 /**
  * 描述:
- * 执行请求的工作线程
+ * 【执行请求的工作线程】
  *
  * flag == null 情况分析
  * 假设我们要对库存进行预热加载到缓存,然后某productId一直都没有被访问,没有读没有写,因此其对应flagMap是无值的
@@ -59,13 +59,14 @@ public class RequestProcessorThread implements Callable<Boolean> {
                     Map<Integer, Boolean> flagMap = requestQueue.getFlagMap();
 
                     if (request instanceof ProductInventoryDBUpdateRequest){
-                        //将该商品设置为[正在修改]
+                        //1.更新操作 -- 将该商品设置为[正在修改]
                         flagMap.put(request.getProductId(),true);
                     }else if (request instanceof ProductInventoryCacheRefreshRequest){
+                        //2.查询操作(去重查询)
                         Boolean flag = flagMap.get(request.getProductId());
                         if (flag == null){
-                            //1.有可能确实是不存在的productId
-                            //2.也可能在mysql真实存在,只是种种原因没设置到flagMap中去--分析见类注释
+                            //(1)有可能确实是不存在的productId
+                            //(2)也可能在mysql真实存在,只是种种原因没设置到flagMap中去--分析见类注释
                             flagMap.put(request.getProductId(),false);
                         }
 
