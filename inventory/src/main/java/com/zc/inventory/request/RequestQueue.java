@@ -42,4 +42,22 @@ public class RequestQueue {
     public void addQueue(ArrayBlockingQueue<Request> queue){
         this.queues.add(queue);
     }
+
+    /**
+     * 获取内存队列的数量
+     * @return
+     */
+    public int queueSize() {
+        return queues.size();
+    }
+
+
+    /**
+     * 根据索引获取内存队列
+     * @param index
+     * @return
+     */
+    public ArrayBlockingQueue<Request> getQueue(int index) {
+        return queues.get(index);
+    }
 }

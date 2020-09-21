@@ -20,11 +20,11 @@ public class ProductInventoryCacheRefreshRequest implements Request{
     private ProductInventoryService productInventoryService;
 
     public ProductInventoryCacheRefreshRequest(Integer productId,
-                                               ProductInventoryService productInventoryService) {
+                                               ProductInventoryService productInventoryService
+                                               ) {
         this.productId = productId;
         this.productInventoryService = productInventoryService;
     }
-
 
     @Override
     public void process() {
@@ -34,4 +34,9 @@ public class ProductInventoryCacheRefreshRequest implements Request{
         //将最新库存刷新到缓存
         productInventoryService.equals(productInventory);
     }
+
+    public Integer getProductId() {
+        return productId;
+    }
+
 }
