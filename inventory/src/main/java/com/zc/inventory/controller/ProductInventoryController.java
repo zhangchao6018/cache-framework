@@ -63,13 +63,54 @@ public class ProductInventoryController {
         System.out.println("===========日志===========: 接收到一个商品库存的读请求，商品id=" + productId);
         ProductInventory productInventory = null;
         try {
-            Request request = new ProductInventoryCacheRefreshRequest(productId,productInventoryService);
+            Request request = new ProductInventoryCacheRefreshRequest(productId,productInventoryService,false);
             requestAsyncProcessService.process(request);
-            productInventory = productInventoryService.getProductInventoryCache(productId);
+
+            long startTime = System.currentTimeMillis();
+            long endTime = 0L;
+            long waitTime = 0L;
+            while(true) {
+                //200ms还未刷到缓存的值
+                if(waitTime > 200) {
+                    break;
+                }
+
+                //尝试去redis中读取一次库存的缓存数据
+                productInventory =  productInventoryService.getProductInventoryCache(productId);
+
+                //如果读到了,直接返回
+                if(productInventory != null){
+                    System.out.println("===========日志===========: 在200ms内读取到了redis中的库存缓存，商品id=" + productInventory.getProductId() + ", 商品库存数量=" + productInventory.getInventoryCnt());
+                    return productInventory;
+                }
+
+                //如果没有读到,等待一段时间
+                else {
+                    Thread.sleep(20);
+                    endTime = System.currentTimeMillis();
+                    waitTime = endTime - startTime;
+                }
+            }
+            //200ms过去了,未获取到缓存值-->走mysql
+            productInventory = productInventoryService.findProductInventory(productId);
+            if(productInventory != null) {
+                request = new ProductInventoryCacheRefreshRequest(productId,productInventoryService,true);
+                requestAsyncProcessService.process(request);
+
+                // 代码会运行到这里，只有三种情况：
+                // 1、就是说，上一次也是读请求，数据刷入了redis，但是redis LRU算法给清理掉了，标志位还是false
+                // 所以此时下一个读请求是从缓存中拿不到数据的，再放一个读Request进队列，让数据去刷新一下
+                // 2、可能在200ms内，就是读请求在队列中一直积压着，没有等待到它执行（在实际生产环境中，基本是比较坑了）
+                // 所以就直接查一次库，然后给队列里塞进去一个刷新缓存的请求
+                // 3、数据库里本身就没有，缓存穿透，穿透redis，请求到达mysql库
+
+                return productInventory;
+            }
+
         }catch (Exception e){
             e.printStackTrace();
         }
-
-        return productInventory;
+        //未命中,返回负值
+        return new ProductInventory(productId, -1L);
     }
 }

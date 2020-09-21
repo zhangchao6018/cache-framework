@@ -10,5 +10,11 @@ public interface Request {
 
     Integer getProductId();
 
-//    boolean isForceRefresh();
+    /**
+     * 由于只有refresh缓存的操作需要调用方法,故写一个默认实现
+     * @return
+     */
+    default boolean isForceRefresh(){
+        return false;
+    }
 }
