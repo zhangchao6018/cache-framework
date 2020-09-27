@@ -7,6 +7,7 @@ import com.zc.inventory.request.Request;
 import com.zc.inventory.service.ProductInventoryService;
 import com.zc.inventory.service.RequestAsyncProcessService;
 import com.zc.inventory.vo.Response;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -24,6 +25,7 @@ import javax.annotation.Resource;
  *（5）读请求执行的时候，会将最新的库存从数据库中查询出来，然后更新到缓存中
  * @Author: zhangchao
  **/
+@Controller
 public class ProductInventoryController {
 
     @Resource
@@ -36,7 +38,7 @@ public class ProductInventoryController {
     @RequestMapping("/updateProductInventory")
     @ResponseBody
     public Response updateProductInventory(ProductInventory productInventory) {
-        System.out.println("===========日志===========: 接收到更新商品库存的请求，商品id=" + productInventory.getProductId() + ", 商品库存数量=" + productInventory.getInventoryCnt());
+        System.out.println("===========日志===========: ----写请求----接收，id=" + productInventory.getProductId() + ", 数量修改为:" + productInventory.getInventoryCnt());
 
         Response response = null;
 
@@ -60,7 +62,7 @@ public class ProductInventoryController {
     @RequestMapping("/getProductInventory")
     @ResponseBody
     public ProductInventory getProductInventory(Integer productId) {
-        System.out.println("===========日志===========: 接收到一个商品库存的读请求，商品id=" + productId);
+        System.out.println("===========日志===========: ---读请求----接收，id=" + productId);
         ProductInventory productInventory = null;
         try {
             Request request = new ProductInventoryCacheRefreshRequest(productId,productInventoryService,false);
@@ -70,10 +72,15 @@ public class ProductInventoryController {
             long endTime = 0L;
             long waitTime = 0L;
             while(true) {
-                //200ms还未刷到缓存的值
-                if(waitTime > 200) {
+
+                if(waitTime > 10000) {
+                    System.out.println("hang finish try db...");
                     break;
                 }
+                //200ms还未刷到缓存的值
+//                if(waitTime > 200) {
+//                    break;
+//                }
 
                 //尝试去redis中读取一次库存的缓存数据
                 productInventory =  productInventoryService.getProductInventoryCache(productId);

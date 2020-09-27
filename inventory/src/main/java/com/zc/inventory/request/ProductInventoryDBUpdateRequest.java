@@ -3,6 +3,8 @@ package com.zc.inventory.request;
 import com.zc.inventory.model.ProductInventory;
 import com.zc.inventory.service.ProductInventoryService;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 描述:
  * 商品发生交易-扣减库存
@@ -33,6 +35,9 @@ public class ProductInventoryDBUpdateRequest implements Request{
 
     @Override
     public void process() {
+
+        try { TimeUnit.SECONDS.sleep(5);} catch (InterruptedException e) {e.printStackTrace();}
+
         //1.删除redis中的缓存
         productInventoryService.removeProductInventoryCache(productInventory);
 

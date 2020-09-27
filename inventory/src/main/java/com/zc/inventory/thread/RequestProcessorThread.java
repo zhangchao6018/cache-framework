@@ -84,8 +84,11 @@ public class RequestProcessorThread implements Callable<Boolean> {
 
                     }
                 }
-
-                System.out.println("===========日志===========: 工作线程处理请求，商品id=" + request.getProductId());
+                if (request instanceof ProductInventoryDBUpdateRequest){
+                    System.out.println("===========日志===========: 写请求，商品id=" + request.getProductId()+",request"+request);
+                }else if (request instanceof ProductInventoryCacheRefreshRequest){
+                    System.out.println("===========日志===========: 读请求，商品id=" + request.getProductId()+",request"+request);
+                }
 
                 //执行该request
                 request.process();

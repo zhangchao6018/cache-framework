@@ -1,6 +1,7 @@
 package com.zc.inventory.dao.impl;
 
 import com.zc.inventory.dao.RedisDAO;
+import org.springframework.stereotype.Repository;
 import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
@@ -10,6 +11,7 @@ import javax.annotation.Resource;
  *
  * @Author: zhangchao
  **/
+@Repository("redisDAO")
 public class RedisDAOImpl implements RedisDAO {
     @Resource
     private JedisCluster jedisCluster;

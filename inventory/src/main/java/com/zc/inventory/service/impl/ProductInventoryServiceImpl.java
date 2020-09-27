@@ -4,6 +4,7 @@ import com.zc.inventory.dao.RedisDAO;
 import com.zc.inventory.mapper.ProductInventoryMapper;
 import com.zc.inventory.model.ProductInventory;
 import com.zc.inventory.service.ProductInventoryService;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
@@ -13,6 +14,7 @@ import javax.annotation.Resource;
  *
  * @Author: zhangchao
  **/
+@Service("productInventoryService")
 public class ProductInventoryServiceImpl implements ProductInventoryService {
     @Resource
     private ProductInventoryMapper productInventoryMapper;
